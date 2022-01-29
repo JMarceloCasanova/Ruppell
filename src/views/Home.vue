@@ -1,18 +1,39 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <panel></panel>
+    <viewport></viewport>
   </div>
 </template>
 
-<script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
 
+<script>
+
+import ViewPort from "@/components/ViewPort.vue";
+import ControlPanel from "@/components/ControlPanel.vue";
 export default {
   name: 'Home',
   components: {
-    HelloWorld
+    viewport: ViewPort,
+    panel: ControlPanel
   }
-}
+};
 </script>
+
+
+<style>
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  margin: 0px;
+}
+canvas {
+  position: relative;
+}
+#app {
+  height: 100%;
+}
+</style>
