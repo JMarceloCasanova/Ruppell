@@ -6,16 +6,18 @@ import {
   PerspectiveCamera,
   WebGLRenderer,
   Color,
-  FogExp2,
-  CylinderBufferGeometry,
-  MeshPhongMaterial,
-  Mesh,
+  //FogExp2,
+  //CylinderBufferGeometry,
+  //MeshPhongMaterial,
+  //Mesh,
   DirectionalLight,
   AmbientLight,
   LineBasicMaterial,
   Geometry,
   Vector3,
-  Line
+  Line,
+  GLTFLoader,
+  Clock
 } from "three-full";
 
 
@@ -26,12 +28,15 @@ export default new Vuex.Store({
   state: {
     width: 0,
     height: 0,
+    totalTime: 0,
     camera: null,
     controls: null,
     scene: null,
     renderer: null,
     axisLines: [],
-    pyramids: []
+    pyramids: [],
+    earth: null,
+    clock: null
   },
   getters: {
     CAMERA_POSITION: state => {
@@ -60,6 +65,8 @@ export default new Vuex.Store({
         // 4. Far clipping plane
         1000
       );
+      state.camera.position.x = 0;
+      state.camera.position.y = 0;
       state.camera.position.z = 500;
     },
     INITIALIZE_CONTROLS(state) {
@@ -82,7 +89,7 @@ export default new Vuex.Store({
     INITIALIZE_SCENE(state) {
       state.scene = new Scene();
       state.scene.background = new Color(0xcccccc);
-      state.scene.fog = new FogExp2(0xcccccc, 0.002);
+      /*state.scene.fog = new FogExp2(0xcccccc, 0.002);
       var geometry = new CylinderBufferGeometry(0, 10, 30, 4, 1);
       var material = new MeshPhongMaterial({
         color: 0xffffff,
@@ -97,7 +104,7 @@ export default new Vuex.Store({
         mesh.matrixAutoUpdate = false;
         state.pyramids.push(mesh);
       }
-      state.scene.add(...state.pyramids);
+      state.scene.add(...state.pyramids);*/
 
       // lights
       var lightA = new DirectionalLight(0xffffff);
@@ -106,7 +113,7 @@ export default new Vuex.Store({
       var lightB = new DirectionalLight(0x002288);
       lightB.position.set(-1, -1, -1);
       state.scene.add(lightB);
-      var lightC = new AmbientLight(0x222222);
+      var lightC = new AmbientLight(0xffffff, 10);
       state.scene.add(lightC);
 
       // Axis Line 1
@@ -134,6 +141,35 @@ export default new Vuex.Store({
       state.axisLines.push(lineC);
 
       state.scene.add(...state.axisLines);
+
+      const loader = new GLTFLoader();
+      loader.load(
+        'Earth_1_12756.glb', 
+        function(gltf){
+          state.earth = gltf.scene;
+          state.scene.add(state.earth);
+
+        }, 
+        undefined, 
+        function(error){
+          console.log(error);
+        }
+      );
+      state.clock = new Clock();
+        
+      //Demo:
+      var interval = setInterval(function() {
+        // get elem
+        if (state.earth == null) return;
+        clearInterval(interval);
+    
+        // the rest of the code
+        state.earth.scale.x = 0.01;
+        state.earth.scale.y = 0.01;
+        state.earth.scale.z = 0.01;
+      }, 10);
+
+
     },
     RESIZE(state, { width, height }) {
       state.width = width;
@@ -142,7 +178,6 @@ export default new Vuex.Store({
       state.camera.updateProjectionMatrix();
       state.renderer.setSize(width, height);
       state.controls.handleResize();
-      state.renderer.render(state.scene, state.camera);
     },
     SET_CAMERA_POSITION(state, { x, y, z }) {
       if (state.camera) {
@@ -159,19 +194,15 @@ export default new Vuex.Store({
     },
     HIDE_AXIS_LINES(state) {
       state.scene.remove(...state.axisLines);
-      state.renderer.render(state.scene, state.camera);
     },
     SHOW_AXIS_LINES(state) {
       state.scene.add(...state.axisLines);
-      state.renderer.render(state.scene, state.camera);
     },
     HIDE_PYRAMIDS(state) {
       state.scene.remove(...state.pyramids);
-      state.renderer.render(state.scene, state.camera);
     },
     SHOW_PYRAMIDS(state) {
       state.scene.add(...state.pyramids);
-      state.renderer.render(state.scene, state.camera);
     }
   },
   actions: {
@@ -197,8 +228,18 @@ export default new Vuex.Store({
     },
     ANIMATE({ state, dispatch }) {
       window.requestAnimationFrame(() => {
-        dispatch("ANIMATE");
+        
+        const deltaTime = Math.min( 0.05, state.clock.getDelta() );
+        state.totalTime += deltaTime;
+        if(state.earth != null){
+          state.earth.position.x = Math.sin(state.totalTime)*10;
+        }
+        
         state.controls.update();
+
+        state.renderer.render(state.scene, state.camera);
+
+        dispatch("ANIMATE");
       });
     }
   }
