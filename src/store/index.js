@@ -35,9 +35,49 @@ export default new Vuex.Store({
     renderer: null,
     axisLines: [],
     pyramids: [],
-    earth: null,
-    moon: null,
-    sun: null,
+    earth: {
+      model: null,
+      radius: 6371,//Volumetric mean radius (km)     6371.000
+      orbit:{
+        semimajorAxis: 149.598,//(10^6 km)
+        perigee: 147.095,//(10^6 km)//Perihelion 
+        apogee: 152.100,//(10^6 km)//Aphelion 
+        revolutionPeriod: 365.242 ,// (days)//Sidereal orbit period
+        synodicPeriod: 365.256,// (days)//Tropical orbit period
+        meanOrbitalVelocity: 29.78,// (km/s)
+        maxOrbitalVelocity: 30.2,// (km/s)
+        minOrbitalVelocity: 29.2,// (km/s)
+        inclinationToEcliptic: 0.000,// (deg)//Orbit inclination
+        orbitEccentricity: 0.0167,//
+        siderealRotationPeriod: 23.9345,// (hrs)
+        obliquityToOrbit: 23.44,// (deg)
+        inclinationOfEquator: 23.44,// (deg)
+      }
+    },
+    moon: {
+      model: null,
+      radius: 1737.4,
+      orbit:{
+        semimajorAxis: 0.3844,//(10^6 km)
+        perigee: 0.3633,//(10^6 km)
+        apogee: 0.4055,//(10^6 km)
+        revolutionPeriod: 27.3217,// (days)
+        synodicPeriod: 29.53,// (days)
+        meanOrbitalVelocity: 1.022,// (km/s)
+        maxOrbitalVelocity: 1.082,// (km/s)
+        minOrbitalVelocity: 0.970,// (km/s)
+        inclinationToEcliptic: 5.145,// (deg)
+        inclinationToEarthEquator: 18.28 - 28.58,// (deg)
+        orbitEccentricity: 0.0549,//
+        siderealRotationPeriod: 655.720,// (hrs)
+        obliquityToOrbit: 6.68,// (deg)
+        recessionRateFromEarth: 3.8// (cm/yr)
+      }
+    },
+    sun: {
+      model: null,
+      radius: 695700
+    },
     clock: null
   },
   getters: {
@@ -148,8 +188,8 @@ export default new Vuex.Store({
       earthLoader.load(
         'Earth_1_12756.glb', 
         function(gltf){
-          state.earth = gltf.scene;
-          state.scene.add(state.earth);
+          state.earth.model = gltf.scene;
+          state.scene.add(state.earth.model);
 
         }, 
         undefined, 
@@ -162,8 +202,8 @@ export default new Vuex.Store({
       moonLoader.load(
         'Moon_1_3474.glb', 
         function(gltf){
-          state.moon = gltf.scene;
-          state.scene.add(state.moon);
+          state.moon.model = gltf.scene;
+          state.scene.add(state.moon.model);
 
         }, 
         undefined, 
@@ -176,8 +216,8 @@ export default new Vuex.Store({
       sunLoader.load(
         'Sun_1_1391000.glb', 
         function(gltf){
-          state.sun = gltf.scene;
-          state.scene.add(state.sun);
+          state.sun.model = gltf.scene;
+          state.scene.add(state.sun.model);
 
         }, 
         undefined, 
@@ -191,18 +231,18 @@ export default new Vuex.Store({
       //Demo:
       var interval = setInterval(function() {
         // get elem
-        if (state.earth == null || state.moon == null || state.sun == null) return;
+        if (state.earth.model == null || state.moon.model == null || state.sun.model == null) return;
         clearInterval(interval);
     
-        state.earth.scale.x = 0.01;
-        state.earth.scale.y = 0.01;
-        state.earth.scale.z = 0.01;
-        state.moon.scale.x = 0.01;
-        state.moon.scale.y = 0.01;
-        state.moon.scale.z = 0.01;
-        state.sun.scale.x = 0.01;
-        state.sun.scale.y = 0.01;
-        state.sun.scale.z = 0.01;
+        state.earth.model.scale.x = 0.01;
+        state.earth.model.scale.y = 0.01;
+        state.earth.model.scale.z = 0.01;
+        state.moon.model.scale.x = 0.01;
+        state.moon.model.scale.y = 0.01;
+        state.moon.model.scale.z = 0.01;
+        state.sun.model.scale.x = 0.01;
+        state.sun.model.scale.y = 0.01;
+        state.sun.model.scale.z = 0.01;
 
         //state.renderer.render(state.scene, state.camera);
       }, 10);
@@ -269,8 +309,8 @@ export default new Vuex.Store({
         
         const deltaTime = Math.min( 0.05, state.clock.getDelta() );
         state.totalTime += deltaTime;
-        if(state.earth != null){
-          state.earth.position.x = Math.sin(state.totalTime)*10;
+        if(state.earth.model != null){
+          state.earth.model.position.x = Math.sin(state.totalTime)*10;
         }
         
         state.controls.update();
