@@ -36,6 +36,8 @@ export default new Vuex.Store({
     axisLines: [],
     pyramids: [],
     earth: null,
+    moon: null,
+    sun: null,
     clock: null
   },
   getters: {
@@ -142,8 +144,8 @@ export default new Vuex.Store({
 
       state.scene.add(...state.axisLines);
 
-      const loader = new GLTFLoader();
-      loader.load(
+      const earthLoader = new GLTFLoader();
+      earthLoader.load(
         'Earth_1_12756.glb', 
         function(gltf){
           state.earth = gltf.scene;
@@ -155,18 +157,54 @@ export default new Vuex.Store({
           console.log(error);
         }
       );
+      
+      const moonLoader = new GLTFLoader();
+      moonLoader.load(
+        'Moon_1_3474.glb', 
+        function(gltf){
+          state.moon = gltf.scene;
+          state.scene.add(state.moon);
+
+        }, 
+        undefined, 
+        function(error){
+          console.log(error);
+        }
+      );
+      
+      const sunLoader = new GLTFLoader();
+      sunLoader.load(
+        'Sun_1_1391000.glb', 
+        function(gltf){
+          state.sun = gltf.scene;
+          state.scene.add(state.sun);
+
+        }, 
+        undefined, 
+        function(error){
+          console.log(error);
+        }
+      );
+
       state.clock = new Clock();
         
       //Demo:
       var interval = setInterval(function() {
         // get elem
-        if (state.earth == null) return;
+        if (state.earth == null || state.moon == null || state.sun == null) return;
         clearInterval(interval);
     
-        // the rest of the code
         state.earth.scale.x = 0.01;
         state.earth.scale.y = 0.01;
         state.earth.scale.z = 0.01;
+        state.moon.scale.x = 0.01;
+        state.moon.scale.y = 0.01;
+        state.moon.scale.z = 0.01;
+        state.sun.scale.x = 0.01;
+        state.sun.scale.y = 0.01;
+        state.sun.scale.z = 0.01;
+
+        //state.renderer.render(state.scene, state.camera);
       }, 10);
 
 
