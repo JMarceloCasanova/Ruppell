@@ -29,6 +29,8 @@ export default new Vuex.Store({
     width: 0,
     height: 0,
     totalTime: 0,
+    scale: 1e-7,
+    timeScale: 1,
     camera: null,
     controls: null,
     scene: null,
@@ -38,17 +40,17 @@ export default new Vuex.Store({
     earth: {
       model: null,
       radius: 6371,//Volumetric mean radius (km)     6371.000
-      orbit:{
-        semimajorAxis: 149.598,//(10^6 km)
-        perigee: 147.095,//(10^6 km)//Perihelion 
-        apogee: 152.100,//(10^6 km)//Aphelion 
+      orbit:{// counterclockwise
+        semimajorAxis: 149.598e6,//(km)
+        orbitEccentricity: 0.0167,//
+        perigee: 147.095e6,//(km)//Perihelion 
+        apogee: 152.100e6,//(km)//Aphelion 
         revolutionPeriod: 365.242 ,// (days)//Sidereal orbit period
         synodicPeriod: 365.256,// (days)//Tropical orbit period
         meanOrbitalVelocity: 29.78,// (km/s)
         maxOrbitalVelocity: 30.2,// (km/s)
         minOrbitalVelocity: 29.2,// (km/s)
         inclinationToEcliptic: 0.000,// (deg)//Orbit inclination
-        orbitEccentricity: 0.0167,//
         siderealRotationPeriod: 23.9345,// (hrs)
         obliquityToOrbit: 23.44,// (deg)
         inclinationOfEquator: 23.44,// (deg)
@@ -58,9 +60,9 @@ export default new Vuex.Store({
       model: null,
       radius: 1737.4,
       orbit:{
-        semimajorAxis: 0.3844,//(10^6 km)
-        perigee: 0.3633,//(10^6 km)
-        apogee: 0.4055,//(10^6 km)
+        semimajorAxis: 0.3844e6,//( km)
+        perigee: 0.3633e6,//( km)
+        apogee: 0.4055e6,//( km)
         revolutionPeriod: 27.3217,// (days)
         synodicPeriod: 29.53,// (days)
         meanOrbitalVelocity: 1.022,// (km/s)
@@ -234,15 +236,15 @@ export default new Vuex.Store({
         if (state.earth.model == null || state.moon.model == null || state.sun.model == null) return;
         clearInterval(interval);
     
-        state.earth.model.scale.x = 0.01;
-        state.earth.model.scale.y = 0.01;
-        state.earth.model.scale.z = 0.01;
-        state.moon.model.scale.x = 0.01;
-        state.moon.model.scale.y = 0.01;
-        state.moon.model.scale.z = 0.01;
-        state.sun.model.scale.x = 0.01;
-        state.sun.model.scale.y = 0.01;
-        state.sun.model.scale.z = 0.01;
+        state.earth.model.scale.x = state.earth.radius * state.scale;
+        state.earth.model.scale.y = state.earth.radius * state.scale;
+        state.earth.model.scale.z = state.earth.radius * state.scale;
+        state.moon.model.scale.x = state.moon.radius * state.scale;
+        state.moon.model.scale.y = state.moon.radius * state.scale;
+        state.moon.model.scale.z = state.moon.radius * state.scale;
+        state.sun.model.scale.x = state.sun.radius * state.scale;
+        state.sun.model.scale.y = state.sun.radius * state.scale;
+        state.sun.model.scale.z = state.sun.radius * state.scale;
 
         //state.renderer.render(state.scene, state.camera);
       }, 10);
@@ -309,8 +311,13 @@ export default new Vuex.Store({
         
         const deltaTime = Math.min( 0.05, state.clock.getDelta() );
         state.totalTime += deltaTime;
-        if(state.earth.model != null){
-          state.earth.model.position.x = Math.sin(state.totalTime)*10;
+        if((state.earth.model != null) && (state.sun.model != null) && (state.moon.model != null)){
+          //state.earth.model.position.x = Math.sin(state.totalTime)*10;
+          //state.earth.model.position.x = Math.sin(state.totalTime)*10;
+          state.sun.model.position.x = Math.cos(state.totalTime) * state.earth.orbit.perigee * 1e-6;
+          state.sun.model.position.y = Math.sin(state.totalTime) * state.earth.orbit.apogee * 1e-6;
+          state.moon.model.position.x = Math.cos(state.totalTime) * state.moon.orbit.perigee * 1e-6;
+          state.moon.model.position.y = Math.sin(state.totalTime) * state.moon.orbit.apogee * 1e-6;
         }
         
         state.controls.update();
